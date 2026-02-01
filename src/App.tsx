@@ -15,9 +15,17 @@ function App() {
 
 	const courses = coursesData as Course[]
 
+	const courseMap = useMemo(
+		() => new Map(courses.map((course) => [getCourseId(course), course])),
+		[courses]
+	)
+
 	const cartCourses = useMemo(
-		() => courses.filter((course) => cartIds.includes(getCourseId(course))),
-		[courses, cartIds]
+		() =>
+			cartIds
+				.map((id) => courseMap.get(id))
+				.filter((course): course is Course => Boolean(course)),
+		[cartIds, courseMap]
 	)
 
 	const handleAddCourse = (courseId: string) => {
@@ -40,6 +48,10 @@ function App() {
 		}
 		const query = encodeURIComponent(cartIds.join(","))
 		navigate(`/checkout?courses=${query}`)
+	}
+
+	const handleReorderCart = (nextIds: string[]) => {
+		setCartIds(nextIds)
 	}
 
 	return (
@@ -76,6 +88,7 @@ function App() {
 								maxItems={maxItems}
 								onRemove={handleRemoveCourse}
 								onCheckout={handleCheckout}
+								onReorder={handleReorderCart}
 								variant="full"
 							/>
 						}
